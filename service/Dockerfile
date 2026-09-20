@@ -1,12 +1,13 @@
-FROM python:3.12.7-alpine AS builder
+FROM python:3.12-alpine3.22 AS builder
 
 WORKDIR /build
 COPY main.py .
 RUN python3 -m compileall -b .
 
-FROM python:3.12.7-alpine AS runtime
+FROM python:3.12-alpine3.22 AS runtime
 
-RUN addgroup -g 10001 appgroup && \
+RUN apk upgrade --no-cache && \
+    addgroup -g 10001 appgroup && \
     adduser -u 10001 -G appgroup -s /sbin/nologin -D appuser
 
 WORKDIR /app
