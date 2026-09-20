@@ -134,12 +134,28 @@ described the deployment: kubectl describe deploy/name  -n debug-lab
 If you ran out of time on any defect, say so here and describe what you would
 have tried next — that section is read carefully and counts in your favour.
 
-The Reporter service throwing Readiness probe failed: HTTP probe failed with statuscode: 503
+### Reporter — Unresolved Finding
 
-what i have checked so far :
+**Symptom:**
+The `reporter` Pod is running but remains `0/1 Ready`. Its readiness probe on `/healthz:8081` repeatedly returns HTTP `503`. Because the Pod is not Ready, the `reporter` Service has **no endpoints**, resulting in `connection refused` when accessing `reporter:8080/report`.
 
-1.) kubectl logs :-  pod list failed: parse pod list: unexpected end of JSON input
+**What I checked:**
 
-2.) checked SA  - correct SA attached
+* Reporter Service exists on port `8080` with selector `app=reporter`.
+* Reporter Pod is running with IP `10.244.0.103` and the application is listening on port `8081`.
+* Pod events confirm repeated readiness probe failures with HTTP `503`.
+* Reporter logs show:
+  `pod list failed: parse pod list: unexpected end of JSON input`
+* Verified the Reporter ServiceAccount is `debug-lab/reporter`.
+* Verified RBAC using `kubectl auth can-i`; the Reporter ServiceAccount **can list Pods** in the namespace.
+* From a temporary BusyBox Pod inside the cluster:
 
-3.) kubectl auth can-i list pods ... --as=...reporter -- gives yes 
+  * `backend:8080/healthz` → `200 OK`
+  * `gateway.debug-lab.svc/status` → `200 OK` and reports `backend: "ok"`
+  * `reporter:8080/report` → `connection refused`
+  * Kubernetes DNS successfully resolves `backend`.
+
+**Conclusion:**
+The issue was narrowed down to the **Reporter application's interaction with the Kubernetes API / Pod-list response**. RBAC authorization, Service configuration, backend connectivity, and cluster DNS were verified and did not appear to be the cause.
+
+The exact reason for the application's `unexpected end of JSON input` error could not be conclusively established within the available investigation time, so I have left this as an **unresolved finding rather than claiming a fix without sufficient evidence**.
