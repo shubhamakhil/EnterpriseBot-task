@@ -1,23 +1,579 @@
+ls -lrth
+[?2004l
+total 45K
+-rwxr-xr-x 1 SHUBHSM AKHIL 197609 4.8K Sep 18 16:02 scenario.sh*
+-rw-r--r-- 1 SHUBHSM AKHIL 197609   37 Sep 20 17:07 FINDINGS.md
+drwxr-xr-x 1 SHUBHSM AKHIL 197609    0 Sep 20 19:06 broken-chart/
+drwxr-xr-x 1 SHUBHSM AKHIL 197609    0 Sep 20 19:06 cluster-state/
+-rw-r--r-- 1 SHUBHSM AKHIL 197609   18 Sep 20 19:26 part4-session.log
 [?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
 [32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
-$ ls
-[?2004lbroken-chart/
-cluster-state/
-FINDINGS.md
-part4-session.log
-scenario.sh*
-[?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
-[32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
-$ git status
-[?2004lOn branch main
-Your branch is up to date with 'origin/main'.
+$ [7m./scenario.sh up[27m
+[C[C./scenario.sh up
+[?2004l
+==> applying cluster environment (cluster-state/)
+namespace/debug-lab created
+Error from server (NotFound): error when creating "cluster-state\\limits.yaml": namespaces "debug-lab" not found
+==> installing the broken chart
+Release "debug-lab" does not exist. Installing it now.
+Error: 1 error occurred:
+	* Job.batch "migrate" is invalid: spec.template.spec.restartPolicy: Required value: valid values: "OnFailure", "Never"
 
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-	part4-session.log
 
-nothing added to commit but untracked files present (use "git add" to track)
+
+[2mhelm reported an error. That is not your machine misbehaving —[0m
+[2mit is part of the exercise. Read the error; it is evidence.[0m
+
+Lab is (partially) installed. Investigate with kubectl, fix the chart,
+re-run './scenario.sh up' to apply your fixes, and './scenario.sh verify'
+to check progress.
 [?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
 [32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
-$ git add -a[KA
-[?2004l
+$ kubectl get all -A
+[?2004l
+NAMESPACE            NAME                                             READY   STATUS                       RESTARTS   AGE
+debug-lab            pod/backend-7948fd6b4b-6jpj2                     0/1     CreateContainerConfigError   0          7s
+debug-lab            pod/gateway-5cbdcd4bf8-d4zld                     0/1     CreateContainerConfigError   0          7s
+debug-lab            pod/metrics-547dccf75-nwdmc                      0/1     CreateContainerConfigError   0          7s
+debug-lab            pod/reporter-6f8bff6b8d-75qrs                    0/1     CreateContainerConfigError   0          7s
+debug-lab            pod/worker-5fcd6b9b6b-4fc6b                      0/1     CreateContainerConfigError   0          7s
+demo                 pod/demo-demo-service-848cb7dc69-2rzwz           1/1     Running                      0          78m
+demo                 pod/demo-demo-service-848cb7dc69-xdjrg           1/1     Running                      0          78m
+ingress-nginx        pod/ingress-nginx-controller-596f5b6bcf-mmk9f    1/1     Running                      0          80m
+kube-system          pod/coredns-559f6c778d-n56jq                     1/1     Running                      0          80m
+kube-system          pod/coredns-559f6c778d-pv4r9                     1/1     Running                      0          80m
+kube-system          pod/etcd-demo-control-plane                      1/1     Running                      0          80m
+kube-system          pod/kindnet-dw6sc                                1/1     Running                      0          80m
+kube-system          pod/kube-apiserver-demo-control-plane            1/1     Running                      0          80m
+kube-system          pod/kube-controller-manager-demo-control-plane   1/1     Running                      0          80m
+kube-system          pod/kube-proxy-6ql5x                             1/1     Running                      0          80m
+kube-system          pod/kube-scheduler-demo-control-plane            1/1     Running                      0          80m
+local-path-storage   pod/local-path-provisioner-75f7fc7dc5-gwskb      1/1     Running                      0          80m
+
+NAMESPACE       NAME                                         TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+debug-lab       service/backend                              ClusterIP      10.96.221.251   <none>        8080/TCP                     8s
+debug-lab       service/gateway                              ClusterIP      10.96.202.212   <none>        80/TCP                       8s
+debug-lab       service/reporter                             ClusterIP      10.96.33.175    <none>        8080/TCP                     8s
+default         service/kubernetes                           ClusterIP      10.96.0.1       <none>        443/TCP                      80m
+demo            service/demo-demo-service                    ClusterIP      10.96.36.167    <none>        80/TCP                       78m
+ingress-nginx   service/ingress-nginx-controller             LoadBalancer   10.96.84.119    <pending>     80:30538/TCP,443:30983/TCP   80m
+ingress-nginx   service/ingress-nginx-controller-admission   ClusterIP      10.96.15.14     <none>        443/TCP                      80m
+kube-system     service/kube-dns                             ClusterIP      10.96.0.10      <none>        53/UDP,53/TCP,9153/TCP       80m
+
+NAMESPACE     NAME                        DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
+kube-system   daemonset.apps/kindnet      1         1         1       1            1           kubernetes.io/os=linux   80m
+kube-system   daemonset.apps/kube-proxy   1         1         1       1            1           kubernetes.io/os=linux   80m
+
+NAMESPACE            NAME                                       READY   UP-TO-DATE   AVAILABLE   AGE
+debug-lab            deployment.apps/backend                    0/1     1            0           8s
+debug-lab            deployment.apps/gateway                    0/1     1            0           8s
+debug-lab            deployment.apps/metrics                    0/1     1            0           8s
+debug-lab            deployment.apps/reporter                   0/1     1            0           8s
+debug-lab            deployment.apps/worker                     0/1     1            0           8s
+demo                 deployment.apps/demo-demo-service          2/2     2            2           78m
+ingress-nginx        deployment.apps/ingress-nginx-controller   1/1     1            1           80m
+kube-system          deployment.apps/coredns                    2/2     2            2           80m
+local-path-storage   deployment.apps/local-path-provisioner     1/1     1            1           80m
+
+NAMESPACE            NAME                                                  DESIRED   CURRENT   READY   AGE
+debug-lab            replicaset.apps/backend-7948fd6b4b                    1         1         0       8s
+debug-lab            replicaset.apps/gateway-5cbdcd4bf8                    1         1         0       8s
+debug-lab            replicaset.apps/metrics-547dccf75                     1         1         0       8s
+debug-lab            replicaset.apps/reporter-6f8bff6b8d                   1         1         0       8s
+debug-lab            replicaset.apps/worker-5fcd6b9b6b                     1         1         0       8s
+demo                 replicaset.apps/demo-demo-service-848cb7dc69          2         2         2       78m
+ingress-nginx        replicaset.apps/ingress-nginx-controller-596f5b6bcf   1         1         1       80m
+kube-system          replicaset.apps/coredns-559f6c778d                    2         2         2       80m
+local-path-storage   replicaset.apps/local-path-provisioner-75f7fc7dc5     1         1         1       80m
+[?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
+[32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
+$ kubectl describe [7mpod/backend-7948fd6b4b-6jpj2[27m
+[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cpod/backend-7948fd6b4b-6jpj2 -n debug-lab
+[?2004l
+Name:             backend-7948fd6b4b-6jpj2
+Namespace:        debug-lab
+Priority:         0
+Service Account:  default
+Node:             demo-control-plane/172.18.0.2
+Start Time:       Sun, 20 Sep 2026 19:26:38 +0530
+Labels:           app=backend
+                  app.kubernetes.io/managed-by=Helm
+                  app.kubernetes.io/part-of=eb-debug-lab
+                  helm.sh/chart=debug-lab-2.0.0
+                  pod-template-hash=7948fd6b4b
+Annotations:      <none>
+Status:           Pending
+IP:               10.244.0.28
+IPs:
+  IP:           10.244.0.28
+Controlled By:  ReplicaSet/backend-7948fd6b4b
+Containers:
+  backend:
+    Container ID:   
+    Image:          docker.io/ebinterview/eb-debug-app:1.0.1
+    Image ID:       
+    Port:           8080/TCP
+    Host Port:      0/TCP
+    State:          Waiting
+      Reason:       CreateContainerConfigError
+    Ready:          False
+    Restart Count:  0
+    Limits:
+      cpu:     200m
+      memory:  128Mi
+    Requests:
+      cpu:      50m
+      memory:   64Mi
+    Readiness:  http-get http://:8080/healthz delay=3s timeout=3s period=5s #success=1 #failure=3
+    Environment:
+      APP_MODE:  api
+      APP_NAME:  backend
+      VERSION:   2.0.0
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-xqfrw (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-xqfrw:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age               From               Message
+  ----     ------     ----              ----               -------
+  Normal   Scheduled  53s               default-scheduler  Successfully assigned debug-lab/backend-7948fd6b4b-6jpj2 to demo-control-plane
+  Normal   Pulled     8s (x5 over 50s)  kubelet            Container image "docker.io/ebinterview/eb-debug-app:1.0.1" already present on machine and can be accessed by the pod
+  Warning  Failed     8s (x5 over 50s)  kubelet            Error: container has runAsNonRoot and image has non-numeric user (nonroot), cannot verify user is non-root (pod: "backend-7948fd6b4b-6jpj2_debug-lab(e5663d7d-a0c3-4069-ac8c-4d63b9f3c0fc)", container: backend)
+[?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
+[32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
+$ kubectl describe [7mpod/gateway-5cbdcd4bf8-d4zld[27m
+[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cpod/gateway-5cbdcd4bf8-d4zld -n debug-lab
+[?2004l
+Name:             gateway-5cbdcd4bf8-d4zld
+Namespace:        debug-lab
+Priority:         0
+Service Account:  default
+Node:             demo-control-plane/172.18.0.2
+Start Time:       Sun, 20 Sep 2026 19:26:38 +0530
+Labels:           app=gateway
+                  app.kubernetes.io/managed-by=Helm
+                  app.kubernetes.io/part-of=eb-debug-lab
+                  helm.sh/chart=debug-lab-2.0.0
+                  pod-template-hash=5cbdcd4bf8
+Annotations:      <none>
+Status:           Pending
+IP:               10.244.0.27
+IPs:
+  IP:           10.244.0.27
+Controlled By:  ReplicaSet/gateway-5cbdcd4bf8
+Containers:
+  gateway:
+    Container ID:   
+    Image:          docker.io/ebinterview/eb-debug-app:1.0.1
+    Image ID:       
+    Port:           8080/TCP
+    Host Port:      0/TCP
+    State:          Waiting
+      Reason:       CreateContainerConfigError
+    Ready:          False
+    Restart Count:  0
+    Limits:
+      cpu:     200m
+      memory:  128Mi
+    Requests:
+      cpu:      50m
+      memory:   64Mi
+    Readiness:  http-get http://:8080/healthz delay=3s timeout=3s period=5s #success=1 #failure=3
+    Environment:
+      APP_MODE:     gateway
+      APP_NAME:     gateway
+      BACKEND_URL:  http://backend.default.svc:8080
+      VERSION:      2.0.0
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-ptf4c (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-ptf4c:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age                  From               Message
+  ----     ------     ----                 ----               -------
+  Normal   Scheduled  3m45s                default-scheduler  Successfully assigned debug-lab/gateway-5cbdcd4bf8-d4zld to demo-control-plane
+  Normal   Pulled     7s (x19 over 3m42s)  kubelet            Container image "docker.io/ebinterview/eb-debug-app:1.0.1" already present on machine and can be accessed by the pod
+  Warning  Failed     7s (x19 over 3m42s)  kubelet            Error: container has runAsNonRoot and image has non-numeric user (nonroot), cannot verify user is non-root (pod: "gateway-5cbdcd4bf8-d4zld_debug-lab(42f27747-31e4-4ca0-9cd8-c713e04a22d2)", container: gateway)
+[?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
+[32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
+$ ./scenario.sh rest[K[Kset
+[?2004l
+==> removing the lab
+release "debug-lab" uninstalled
+namespace "debug-lab" deleted
+Removed. Note: this does NOT restore the chart files — use git for that.
+[?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
+[32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
+$ ./scenario.sh reset[K[K[K[K[Kup
+[?2004l
+==> applying cluster environment (cluster-state/)
+namespace/debug-lab created
+Error from server (NotFound): error when creating "cluster-state\\limits.yaml": namespaces "debug-lab" not found
+==> installing the broken chart
+Release "debug-lab" does not exist. Installing it now.
+Error: 1 error occurred:
+	* Job.batch "migrate" is invalid: spec.template.spec.restartPolicy: Required value: valid values: "OnFailure", "Never"
+
+
+
+[2mhelm reported an error. That is not your machine misbehaving —[0m
+[2mit is part of the exercise. Read the error; it is evidence.[0m
+
+Lab is (partially) installed. Investigate with kubectl, fix the chart,
+re-run './scenario.sh up' to apply your fixes, and './scenario.sh verify'
+to check progress.
+[?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
+[32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
+$ ./scenario.sh up[K[Kverify
+[?2004l
+==> verifying goal state in namespace debug-lab
+  [31mFAIL[0m  migrate Job has not completed (does it exist? did the chart even install cleanly?)
+  [31mFAIL[0m  deployment backend: 0/1 ready
+  [31mFAIL[0m  deployment gateway: 0/1 ready
+  [31mFAIL[0m  deployment worker: 0/1 ready
+  [31mFAIL[0m  deployment reporter: 0/1 ready
+  [31mFAIL[0m  deployment metrics: 0/1 ready
+  [31mFAIL[0m  1 pod(s) in CrashLoopBackOff
+  [31mFAIL[0m  ServiceAccount debug-lab/reporter cannot list pods
+  [31mFAIL[0m  backend does not answer on http://backend:8080/healthz
+  [31mFAIL[0m  gateway /status does not report backend=ok
+  [31mFAIL[0m  reporter /report does not return a pod count
+
+[31m11 check(s) failing[0m, 0 passing. Keep digging — every failure is a symptom.
+[?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
+[32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
+$ kubectl get all -n debug-lab
+[?2004l
+NAME                            READY   STATUS             RESTARTS      AGE
+pod/backend-794c558bfb-xwkzv    0/1     Running            0             30s
+pod/gateway-69d86c676-r4krs     0/1     Running            0             30s
+pod/metrics-6c57877dc7-rxs2c    0/1     Running            0             30s
+pod/reporter-689754d5bb-cxl26   0/1     Running            0             30s
+pod/worker-85c774d568-zpp4z     0/1     CrashLoopBackOff   2 (16s ago)   30s
+
+NAME               TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+service/backend    ClusterIP   10.96.113.48   <none>        8080/TCP   31s
+service/gateway    ClusterIP   10.96.226.52   <none>        80/TCP     31s
+service/reporter   ClusterIP   10.96.200.26   <none>        8080/TCP   31s
+
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/backend    0/1     1            0           31s
+deployment.apps/gateway    0/1     1            0           31s
+deployment.apps/metrics    0/1     1            0           31s
+deployment.apps/reporter   0/1     1            0           31s
+deployment.apps/worker     0/1     1            0           31s
+
+NAME                                  DESIRED   CURRENT   READY   AGE
+replicaset.apps/backend-794c558bfb    1         1         0       31s
+replicaset.apps/gateway-69d86c676     1         1         0       31s
+replicaset.apps/metrics-6c57877dc7    1         1         0       31s
+replicaset.apps/reporter-689754d5bb   1         1         0       31s
+replicaset.apps/worker-85c774d568     1         1         0       31s
+[?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
+[32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
+$ kubectl describe pod [K/[7mpod/backend-794c558bfb-xwkzv[27m
+[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cpod/backend-794c558bfb-xwkzv 0n [K[K[K-n debug-lab
+[?2004l
+error: arguments in resource/name form may not have more than one slash
+[?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
+[32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
+$ kubectl describe pod/pod/backend-794c558bfb-xwkzv -n debug-lab[1P[1P[1P[1P
+[?2004l
+Name:             backend-794c558bfb-xwkzv
+Namespace:        debug-lab
+Priority:         0
+Service Account:  default
+Node:             demo-control-plane/172.18.0.2
+Start Time:       Sun, 20 Sep 2026 19:43:20 +0530
+Labels:           app=backend
+                  app.kubernetes.io/managed-by=Helm
+                  app.kubernetes.io/part-of=eb-debug-lab
+                  helm.sh/chart=debug-lab-2.0.0
+                  pod-template-hash=794c558bfb
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.30
+IPs:
+  IP:           10.244.0.30
+Controlled By:  ReplicaSet/backend-794c558bfb
+Containers:
+  backend:
+    Container ID:   containerd://ff7732f576482e915fd568bd60c8bfa5a6b215c8d74dfa7d5ed1de719e823295
+    Image:          docker.io/ebinterview/eb-debug-app:1.0.1
+    Image ID:       docker.io/ebinterview/eb-debug-app@sha256:17f41698c10f5c18693339281b92d3cfef16d9fcffcad440a24e7ab19e05c443
+    Port:           8080/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Sun, 20 Sep 2026 19:43:23 +0530
+    Ready:          False
+    Restart Count:  0
+    Limits:
+      cpu:     200m
+      memory:  128Mi
+    Requests:
+      cpu:      50m
+      memory:   64Mi
+    Readiness:  http-get http://:8080/healthz delay=3s timeout=3s period=5s #success=1 #failure=3
+    Environment:
+      APP_MODE:  api
+      APP_NAME:  backend
+      VERSION:   2.0.0
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-97nms (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-97nms:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age                From               Message
+  ----     ------     ----               ----               -------
+  Normal   Scheduled  67s                default-scheduler  Successfully assigned debug-lab/backend-794c558bfb-xwkzv to demo-control-plane
+  Normal   Pulled     65s                kubelet            Container image "docker.io/ebinterview/eb-debug-app:1.0.1" already present on machine and can be accessed by the pod
+  Normal   Created    65s                kubelet            Container created
+  Normal   Started    64s                kubelet            Container started
+  Warning  Unhealthy  4s (x12 over 59s)  kubelet            Readiness probe failed: Get "http://10.244.0.30:8080/healthz": dial tcp 10.244.0.30:8080: connect: connection refused
+[?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
+[32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
+$ kubectl describe pod/backend-794c558bfb-xwkzv -n debug-lab[1P[1P[1P[1P[1P[1P[1P[1P[1P[1P[1P[1P[1P[1P[1P[1P[1P[1P[1P[1P[1P[1P[1P[1P[23@[7mgateway-69d86c676-r4krs[27mgateway-69d86c676-r4krs
+[?2004l
+Name:             gateway-69d86c676-r4krs
+Namespace:        debug-lab
+Priority:         0
+Service Account:  default
+Node:             demo-control-plane/172.18.0.2
+Start Time:       Sun, 20 Sep 2026 19:43:20 +0530
+Labels:           app=gateway
+                  app.kubernetes.io/managed-by=Helm
+                  app.kubernetes.io/part-of=eb-debug-lab
+                  helm.sh/chart=debug-lab-2.0.0
+                  pod-template-hash=69d86c676
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.31
+IPs:
+  IP:           10.244.0.31
+Controlled By:  ReplicaSet/gateway-69d86c676
+Containers:
+  gateway:
+    Container ID:   containerd://2a86a5334c84a7d29ff2802cd54d61e8d0c18d683f29bce5a567dc2218e55b56
+    Image:          docker.io/ebinterview/eb-debug-app:1.0.1
+    Image ID:       docker.io/ebinterview/eb-debug-app@sha256:17f41698c10f5c18693339281b92d3cfef16d9fcffcad440a24e7ab19e05c443
+    Port:           8080/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Sun, 20 Sep 2026 19:43:23 +0530
+    Ready:          False
+    Restart Count:  0
+    Limits:
+      cpu:     200m
+      memory:  128Mi
+    Requests:
+      cpu:      50m
+      memory:   64Mi
+    Readiness:  http-get http://:8080/healthz delay=3s timeout=3s period=5s #success=1 #failure=3
+    Environment:
+      APP_MODE:     gateway
+      APP_NAME:     gateway
+      BACKEND_URL:  http://backend.default.svc:8080
+      VERSION:      2.0.0
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-w2s8j (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-w2s8j:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age                From               Message
+  ----     ------     ----               ----               -------
+  Normal   Scheduled  95s                default-scheduler  Successfully assigned debug-lab/gateway-69d86c676-r4krs to demo-control-plane
+  Normal   Pulled     93s                kubelet            Container image "docker.io/ebinterview/eb-debug-app:1.0.1" already present on machine and can be accessed by the pod
+  Normal   Created    93s                kubelet            Container created
+  Normal   Started    92s                kubelet            Container started
+  Warning  Unhealthy  2s (x18 over 87s)  kubelet            Readiness probe failed: Get "http://10.244.0.31:8080/healthz": dial tcp 10.244.0.31:8080: connect: connection refused
+[?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
+[32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
+$ kubectl describe [7mpod/worker-85c774d568-zpp4z[27m
+[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cpod/worker-85c774d568-zpp4z -n debug-lab
+[?2004l
+Name:             worker-85c774d568-zpp4z
+Namespace:        debug-lab
+Priority:         0
+Service Account:  default
+Node:             demo-control-plane/172.18.0.2
+Start Time:       Sun, 20 Sep 2026 19:43:20 +0530
+Labels:           app=worker
+                  app.kubernetes.io/managed-by=Helm
+                  app.kubernetes.io/part-of=eb-debug-lab
+                  helm.sh/chart=debug-lab-2.0.0
+                  pod-template-hash=85c774d568
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.33
+IPs:
+  IP:           10.244.0.33
+Controlled By:  ReplicaSet/worker-85c774d568
+Containers:
+  worker:
+    Container ID:   containerd://674627679384e91f8390ad5c6d1879c1d28e8532258f047f3d7d6c40cbf15b50
+    Image:          docker.io/ebinterview/eb-debug-app:1.0.1
+    Image ID:       docker.io/ebinterview/eb-debug-app@sha256:17f41698c10f5c18693339281b92d3cfef16d9fcffcad440a24e7ab19e05c443
+    Port:           8080/TCP
+    Host Port:      0/TCP
+    State:          Terminated
+      Reason:       Error
+      Exit Code:    1
+      Started:      Sun, 20 Sep 2026 19:44:58 +0530
+      Finished:     Sun, 20 Sep 2026 19:44:58 +0530
+    Last State:     Terminated
+      Reason:       Error
+      Exit Code:    1
+      Started:      Sun, 20 Sep 2026 19:43:59 +0530
+      Finished:     Sun, 20 Sep 2026 19:43:59 +0530
+    Ready:          False
+    Restart Count:  4
+    Limits:
+      cpu:     200m
+      memory:  128Mi
+    Requests:
+      cpu:      50m
+      memory:   64Mi
+    Readiness:  http-get http://:8080/healthz delay=3s timeout=3s period=5s #success=1 #failure=3
+    Environment:
+      APP_MODE:  worker
+      APP_NAME:  worker
+      VERSION:   2.0.0
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-46n7f (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-46n7f:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age                 From               Message
+  ----     ------     ----                ----               -------
+  Normal   Scheduled  2m2s                default-scheduler  Successfully assigned debug-lab/worker-85c774d568-zpp4z to demo-control-plane
+  Normal   Pulled     25s (x5 over 2m)    kubelet            Container image "docker.io/ebinterview/eb-debug-app:1.0.1" already present on machine and can be accessed by the pod
+  Normal   Created    25s (x5 over 2m)    kubelet            Container created
+  Normal   Started    24s (x5 over 119s)  kubelet            Container started
+  Warning  BackOff    23s (x7 over 118s)  kubelet            Back-off restarting failed container worker in pod worker-85c774d568-zpp4z_debug-lab(85601489-a910-44ad-890a-3a72c2413f31)
+[?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
+[32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
+$ kubectl describe pod/worker-85c774d568-zpp4z -n debug-lab
+[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cgateway-69d86c676-r4krs[C[C[C[C[C[C[C[C[C[C[C[C[C
+[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[1@backend-794c558bfb-xwkzv[C[C[C[C[C[C[C[C[C[C[C[C[C
+[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[4@pod/[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C
+[C[C[C[C[C[C[C[C[C[C[34Pget all[C[C[C[C[C[C[C[C[C[C[C[C[C
+[C[C[8P./scenario.sh verify[4Pupverify
+[C[Ckubectl get all -n debug-lab[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[?5h[?5l[?5h[?5l[?5h[?5l[?5h[?5l[7mkubectl logs deploy/backend -n debug-lab[27m
+[C[Ckubectl logs deploy/backend -n debug-lab
+[?2004l
+2026/09/20 14:13:23 eb-debug-app 2.0.0 starting: mode=api pod=backend-794c558bfb-xwkzv listening on :8081 (image default is 8081; set PORT to override)
+[?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
+[32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
+$ [7mkubectl logs deploy/gateway -n debug-lab[27m
+[C[Ckubectl logs deploy/gateway -n debug-lab
+[?2004l
+2026/09/20 14:13:23 eb-debug-app 2.0.0 starting: mode=gateway pod=gateway-69d86c676-r4krs listening on :8081 (image default is 8081; set PORT to override)
+[?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
+[32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
+$ [7mkubectl logs deploy/worker -n debug-lab --previous[27m
+[C[Ckubectl logs deploy/worker -n debug-lab --previous
+[?2004l
+2026/09/20 14:16:20 FATAL: worker could not initialise its cache: mkdir /var/cache/app: read-only file system — the process needs a writable directory at /var/cache/app (mount a volume there, or set CACHE_DIR)
+[?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
+[32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
+$ kubectl restart deploy/backend -n debug-lab
+[?2004l
+error: unknown command "restart" for "kubectl"
+[?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
+[32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
+$ kubectl restart deploy/backend -n debug-lab[C[1@r[1@o[1@l[1@l[1@o[1@u[1@t[1@ 
+[?2004l
+deployment.apps/backend restarted
+[?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
+[32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
+$ kubectl get pod -n debug-lab
+[?2004l
+NAME                        READY   STATUS             RESTARTS       AGE
+backend-5bbb5f95fc-x9c69    0/1     Running            0              13s
+backend-794c558bfb-xwkzv    0/1     Running            0              13m
+gateway-69d86c676-r4krs     0/1     Running            0              13m
+metrics-6c57877dc7-rxs2c    0/1     Running            0              13m
+reporter-689754d5bb-cxl26   0/1     Running            0              13m
+worker-85c774d568-zpp4z     0/1     CrashLoopBackOff   7 (117s ago)   13m
+[?2004h]0;MINGW64:/c/Users/SHUBHSM AKHIL/OneDrive/Desktop/EnterpriseBot-task/lab
+[32mSHUBHSM AKHIL@shubham-akhil [35mMINGW64 [33m~/OneDrive/Desktop/EnterpriseBot-task/lab[36m (main)[0m
