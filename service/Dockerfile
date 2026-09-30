@@ -12,7 +12,7 @@ RUN apk upgrade --no-cache && \
 
 WORKDIR /app
 
-COPY --from=builder --chown=appuser:appgroup /build/main.py /app/main.py
+COPY --from=builder --chown=appuser:appgroup /build/main.pyc /app/main.pyc
 
 USER appuser:appgroup
 
