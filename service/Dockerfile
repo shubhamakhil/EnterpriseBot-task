@@ -21,4 +21,4 @@ ENV PORT=8080 \
 
 EXPOSE 8080
 
-ENTRYPOINT ["python3", "/app/main.py"]
+ENTRYPOINT ["python3", "/app/main.pyc"]
